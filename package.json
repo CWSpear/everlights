@@ -1,6 +1,6 @@
 {
   "name": "everlights",
-  "version": "1.0.0-alpha.4",
+  "version": "1.0.0-alpha.5",
   "description": "A developer-friendly SDK for for easy integrations with EverLights (v3)",
   "repository": {
     "type": "git",
