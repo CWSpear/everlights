@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import { EffectType } from './const';
-import { ColorInput, EffectInput, Zone } from './types';
+import type { ColorInput, EffectInput, Zone } from './types';
 import { EverLights } from './v3-sdk';
 
 const everLights = new EverLights({ host: process.env.EVER_LIGHTS_HOST! });
