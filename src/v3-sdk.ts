@@ -39,10 +39,10 @@ export class EverLights {
     return (await this.api.get<Program>(`zones/${zoneSerial}/sequence`)).data;
   }
 
-  async startProgram(zoneSerial: string, pattern: ColorInput[], effects: EffectInput[] = []): Promise<Program> {
+  async startProgram(zoneSerial: string, pattern: ColorInput[], effects: EffectInput[] | Effect[] = []): Promise<Program> {
     const payload: Program = {
-      pattern: pattern.map((color) => colorHex(color)),
-      effects: effects.map((effect) => ({ effectType: effect.type, value: effect.speed })),
+      pattern: this.normalizePatternInput(pattern),
+      effects: this.normalizeEffectInput(effects),
     };
     return (await this.api.post<Program>(`zones/${zoneSerial}/sequence`, payload)).data;
   }
@@ -94,6 +94,27 @@ export class EverLights {
   async updateTime(time: string): Promise<void> {
     return (await this.api.put<void>(`time`, { time })).data;
   }
+
+  private normalizePatternInput(input: ColorInput[]): string[] {
+    return input.map((color) => colorHex(color));
+  }
+
+  private normalizeEffectInput(input: EffectInput[] | Effect[]): Effect[] {
+    return input.map((effect) => {
+      if (this.isEffect(effect)) {
+        return effect;
+      }
+
+      return {
+        effectType: effect.type,
+        value: effect.speed,
+      };
+    });
+  }
+
+  private isEffect(effectOrInputEffect: EffectInput | Effect): effectOrInputEffect is Effect {
+    return 'effectType' in effectOrInputEffect;
+  }
 }
 
 export class ZoneHelper {
@@ -103,7 +124,7 @@ export class ZoneHelper {
     return this.everLights.getProgram(this.serial);
   }
 
-  async startProgram(pattern: ColorInput[], effects: EffectInput[] = []): Promise<Program> {
+  async startProgram(pattern: ColorInput[], effects: EffectInput[] | Effect[] = []): Promise<Program> {
     return this.everLights.startProgram(this.serial, pattern, effects);
   }
 
