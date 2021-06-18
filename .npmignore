@@ -1,5 +1,4 @@
-optic.yml
-.optic
-node_modules
-.idea
-src
+/*
+!/package.json
+!/README.md
+!/dist/*
