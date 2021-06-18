@@ -14,7 +14,8 @@
     "declaration": true
   },
   "files": [
-    "./src/main.ts"
+    "./src/main.ts",
+    "./src/missing.d.ts"
   ],
   "exclude": [
     "./src/v1-sdk.ts",

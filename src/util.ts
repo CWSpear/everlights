@@ -1,6 +1,5 @@
 import type { ColorInput } from './types';
-
-const normalizeColor = require('color-normalize');
+import normalizeColor from 'color-normalize';
 
 const hexColorRegex = /^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i;
 

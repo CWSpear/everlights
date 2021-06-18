@@ -1,6 +1,6 @@
 {
   "name": "everlights",
-  "version": "1.0.0-alpha.2",
+  "version": "1.0.0-alpha.3",
   "description": "A developer-friendly SDK for for easy integrations with EverLights (v3)",
   "repository": {
     "type": "git",
@@ -11,7 +11,7 @@
   "main": "./dist/require/main.js",
   "module": "true",
   "exports": {
-    "import": "./dist/module/main.mjs",
+    "import": "./dist/module/main.js",
     "commonjs": "./dist/require/main.js"
   },
   "types": "dist/main.d.ts",
