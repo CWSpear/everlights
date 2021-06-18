@@ -1,6 +1,6 @@
 {
   "name": "everlights",
-  "version": "1.0.0-alpha.7",
+  "version": "1.0.0-alpha.8",
   "description": "A developer-friendly SDK for for easy integrations with EverLights (v3)",
   "repository": {
     "type": "git",
@@ -9,7 +9,7 @@
   "bugs": "https://github.com/CWSpear/everlights/issues",
   "homepage": "https://github.com/CWSpear/everlights/blob/master/README.md",
   "main": "./dist/require/main.js",
-  "module": "true",
+  "type": "module",
   "exports": {
     "import": "./dist/module/main.js",
     "require": "./dist/require/main.js"
