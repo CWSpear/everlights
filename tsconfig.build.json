@@ -2,7 +2,8 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "commonjs",
-    "outDir": "./dist/",
+    "moduleResolution": "Node",
+    "outDir": "./dist/require/",
     "rootDir": "./src/",
     "baseUrl": ".",
     "strict": true,
@@ -16,6 +17,7 @@
     "./src/main.ts"
   ],
   "exclude": [
-    "./src/types/**/*"
+    "./src/v1-sdk.ts",
+    "./src/scratch.ts"
   ]
 }

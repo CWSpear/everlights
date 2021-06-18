@@ -3,7 +3,8 @@
 
 import chalk from 'chalk';
 import { createSocket, Socket } from 'dgram';
-import { ColorInput, hex, socketColorHex } from './util';
+import { ColorInput } from './types';
+import { hex, socketColorHex } from './util';
 
 export enum Pattern {
   None = 0,
