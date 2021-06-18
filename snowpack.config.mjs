@@ -5,14 +5,14 @@
 const config = {
   mode: 'production',
   mount: {
-    src: '/module',
+    src: '/lib',
     public: '/',
   },
   plugins: [
     ['@snowpack/plugin-typescript', { args: '--project ./tsconfig.build.json' }],
   ],
   buildOptions: {
-    out: './dist/',
+    out: './dist/import/',
     sourcemap: true,
   },
   exclude: [

@@ -1,6 +1,6 @@
 {
   "name": "everlights",
-  "version": "1.0.0-alpha.8",
+  "version": "1.0.0-alpha.9",
   "description": "A developer-friendly SDK for for easy integrations with EverLights (v3)",
   "repository": {
     "type": "git",
@@ -8,13 +8,12 @@
   },
   "bugs": "https://github.com/CWSpear/everlights/issues",
   "homepage": "https://github.com/CWSpear/everlights/blob/master/README.md",
-  "main": "./dist/require/main.js",
-  "type": "module",
+  "main": "./dist/require/lib/main.js",
+  "types": "./dist/require/lib/main.d.ts",
   "exports": {
-    "import": "./dist/module/main.js",
-    "require": "./dist/require/main.js"
+    "import": "./dist/import/lib/main.js",
+    "require": "./dist/require/lib/main.js"
   },
-  "types": "./dist/require/main.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npm run clean && npm run compile:module && npm run compile:require",
@@ -26,10 +25,14 @@
     "prettier": "prettier -w ./src/**/*",
     "prepublishOnly": "npm run build"
   },
-  "keywords": ["everlights", "sdk", "lighting", "christmas"],
+  "keywords": [
+    "everlights",
+    "sdk",
+    "lighting",
+    "christmas"
+  ],
   "author": "CWSpear <cam@cameronspear.com>",
   "license": "ISC",
-  "node": "^12.20.0 || ^14.13.1 || >=16.0.0",
   "dependencies": {
     "axios": "^0.21.1",
     "color-normalize": "^1.5.2",
