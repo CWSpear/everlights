@@ -10,7 +10,9 @@
     "compile": "tsc --project ./tsconfig.build.json",
     "clean": "rimraf ./dist/",
     "dev": "ts-node ./src/scratch.ts",
-    "dev:watch": "ts-node-dev --notify --rs --transpile-only --respawn ./src/scratch.ts"
+    "dev:watch": "ts-node-dev --notify --rs --transpile-only --respawn ./src/scratch.ts",
+    "prettier": "prettier -w ./src/**/*",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [],
   "author": "",

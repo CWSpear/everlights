@@ -1,4 +1,4 @@
-import type { ColorInput } from '../util';
+import type { ColorInput } from './color';
 import type { Program } from './program';
 
 export interface Sequence extends Program {
