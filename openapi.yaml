@@ -1,0 +1,469 @@
+openapi: 3.0.3
+info:
+  title: EverLights
+  version: 1.0.0
+servers:
+  - url: http://EVER_LIGHTS_HOST
+paths:
+  /v1:
+    get:
+      responses:
+        "200":
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+  /v1/available:
+    get:
+      responses:
+        "200":
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: string
+  /v1/zones:
+    get:
+      responses:
+        "200":
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Zone'
+  /v1/zones/{zoneId}/sequence:
+    get:
+      parameters:
+        - name: zoneId
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Program'
+    post:
+      parameters:
+        - name: zoneId
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Program'
+      responses:
+        "200":
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Program'
+    delete:
+      parameters:
+        - name: zoneId
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "204":
+          description: ''
+          content: { }
+        "400":
+          description: ''
+          content:
+            text/html:
+              schema:
+                type: string
+  /v1/sequences:
+    get:
+      responses:
+        "200":
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sequence'
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Sequence'
+      responses:
+        "201":
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateSequenceResponse'
+        "409":
+          description: ''
+          content:
+            text/html:
+              schema:
+                type: string
+  /v1/sequences/{sequenceId}:
+    put:
+      parameters:
+        - name: sequenceId
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Sequence'
+      responses:
+        "200":
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sequence'
+    delete:
+      parameters:
+        - name: sequenceId
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "204":
+          description: ''
+          content: { }
+  /v1/events:
+    get:
+      responses:
+        "200":
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { }
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+      responses:
+        "201":
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateEventResponse'
+  /v1/events/{eventId}:
+    put:
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+      responses:
+        "200":
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+    delete:
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "204":
+          description: ''
+          content: { }
+        "404":
+          description: ''
+          content:
+            text/html:
+              schema:
+                type: string
+  /v1/time:
+    put:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Time'
+      responses:
+        "200":
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Time'
+components:
+  schemas:
+    Status:
+      required:
+        - firmwareVersion
+        - hardwareVersion
+        - lastActiveDate
+        - lastCheckinDate
+        - localIP
+        - radioFirmwareVersion
+        - rebootCount
+        - serial
+        - serverReachable
+        - ssid
+        - timeOffset
+        - zones
+      type: object
+      properties:
+        zones:
+          type: array
+          items:
+            $ref: '#/components/schemas/Zone'
+        timeOffset:
+          type: number
+        ssid:
+          type: string
+        serverReachable:
+          type: boolean
+        serial:
+          type: string
+        rebootCount:
+          type: number
+        radioFirmwareVersion:
+          type: string
+        localIP:
+          type: string
+        lastCheckinDate:
+          type: string
+        lastActiveDate:
+          type: string
+        hardwareVersion:
+          type: string
+        firmwareVersion:
+          type: string
+    Zone:
+      required:
+        - active
+        - bridgeSerial
+        - configuredLength
+        - current
+        - firmwareVersion
+        - lastActiveDate
+        - lastRequestDate
+        - lastResponseDate
+        - rebootCount
+        - rssi
+        - serial
+        - snr
+        - temperature
+      type: object
+      properties:
+        temperature:
+          type: number
+        snr:
+          type: number
+        serial:
+          type: string
+        rssi:
+          type: number
+        rebootCount:
+          type: number
+        lastResponseDate:
+          type: string
+        lastRequestDate:
+          type: string
+        lastActiveDate:
+          type: string
+        firmwareVersion:
+          type: string
+        current:
+          type: number
+        configuredLength:
+          type: number
+        bridgeSerial:
+          type: string
+        active:
+          type: boolean
+    Program:
+      required:
+        - effects
+        - pattern
+      type: object
+      properties:
+        pattern:
+          type: array
+          items:
+            type: string
+        effects:
+          type: array
+          items:
+            $ref: '#/components/schemas/ZoneEffect'
+    ZoneEffect:
+      required:
+        - effectType
+        - value
+      type: object
+      properties:
+        value:
+          type: number
+        effectType:
+          type: string
+    Sequence:
+      required:
+        - accountId
+        - alias
+        - effects
+        - groups
+        - id
+        - lastChanged
+        - pattern
+      type: object
+      properties:
+        pattern:
+          type: array
+          items:
+            type: string
+        lastChanged:
+          type: string
+        id:
+          type: string
+        groups:
+          type: array
+          items:
+            type: string
+        group:
+          type: string
+        effects:
+          type: array
+          items:
+            $ref: '#/components/schemas/ZoneEffect'
+        alias:
+          type: string
+        accountId:
+          type: string
+    CreateSequenceResponse:
+      required:
+        - _id
+        - accountId
+        - alias
+        - created
+        - effects
+        - groups
+        - id
+        - lastChanged
+        - pattern
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Sequence'
+      properties:
+        _id:
+          type: string
+    EventSequence:
+      required:
+        - duration
+        - sequenceId
+      type: object
+      properties:
+        sequenceId:
+          type: string
+        duration:
+          type: number
+    EventOccurrences:
+      required:
+        - end
+        - start
+      type: object
+      properties:
+        start:
+          type: string
+        end:
+          type: string
+    Event:
+      required:
+        - accountId
+        - alias
+        - flags
+        - group
+        - id
+        - lastChanged
+        - occurrences
+        - sequences
+        - zoneSerials
+      type: object
+      properties:
+        zoneSerials:
+          type: array
+          items:
+            type: string
+        sequences:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventSequence'
+        occurrences:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventOccurrences'
+        lastChanged:
+          type: string
+        id:
+          type: string
+        group:
+          type: string
+        flags:
+          type: array
+          items:
+            type: string
+        alias:
+          type: string
+        accountId:
+          type: string
+    CreateEventResponse:
+      allOf:
+        - $ref: '#/components/schemas/Event'
+      properties:
+        _id:
+          type: string
+    Time:
+      required:
+        - time
+      type: object
+      properties:
+        time:
+          type: string
