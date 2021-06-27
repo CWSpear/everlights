@@ -1,8 +1,11 @@
 {
+  "extends": "./tsconfig.build.json",
   "ts-node": {
     "files": true
   },
-  "extends": "./tsconfig.build.json",
+  "compilerOptions": {
+    "types": ["jest", "node"]
+  },
   "include": ["src/**/*", "snowpack.config.mjs"],
   "exclude": []
 }

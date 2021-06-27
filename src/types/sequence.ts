@@ -1,20 +1,16 @@
-import type { ColorInput } from './color';
-import type { Effect } from './effect';
-import type { Program } from './program';
+import type { Program, ProgramInput } from './program';
 
 export interface Sequence extends Program {
   lastChanged: string;
   id: string;
   groups: string[];
-  group?: string;
+  group?: string; // this seems to be more or less ignored (in favor of `groups`)
   alias: string;
   accountId: string;
 }
 
-export interface SequenceInput {
+export interface SequenceInput extends ProgramInput {
   alias: string;
-  pattern: ColorInput[];
-  effects?: Effect[];
   groups?: string[]; // defaults to [`Personal/`]
   accountId?: string;
 }

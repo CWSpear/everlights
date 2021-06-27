@@ -1,13 +1,75 @@
 import type { AxiosInstance } from 'axios';
 import axios from 'axios';
 import { v4 as uuid } from 'uuid';
-import type { ColorInput, Effect, EffectInput, Options, Program, ScheduledEvent, Sequence, SequenceInput, Status, Zone } from './types';
-import { colorHex } from './util';
+import type {
+  ColorInput,
+  Effect,
+  EffectInput,
+  Options,
+  Program,
+  ProgramInput,
+  ScheduledEvent,
+  Sequence,
+  SequenceInput,
+  Status,
+  Zone,
+} from './types';
+import { colorHex, validate } from './util';
+import { programInputSchema, sequenceInputValidation } from './validation';
 import { ZoneHelper } from './zone-helper';
 
 export class EverLights {
   static isEffect(effectOrInputEffect: EffectInput | Effect): effectOrInputEffect is Effect {
     return 'effectType' in effectOrInputEffect;
+  }
+
+  static normalizePattern(color: ColorInput): string {
+    return colorHex(color);
+  }
+
+  static normalizePatterns(colors: ColorInput[]): string[] {
+    return colors.map((color) => EverLights.normalizePattern(color));
+  }
+
+  static normalizeEffect(effect: EffectInput | Effect): Effect {
+    if (EverLights.isEffect(effect)) {
+      return effect;
+    }
+
+    return {
+      effectType: effect.type,
+      value: effect.speed,
+    };
+  }
+
+  static normalizeEffects(effects: EffectInput[] | Effect[]): Effect[] {
+    return effects.map((effect) => EverLights.normalizeEffect(effect));
+  }
+
+  static normalizeSequence(sequenceId: string, sequence: SequenceInput | Sequence): Sequence {
+    const groups = sequence.groups ? EverLights.normalizeGroupNames(sequence.groups) : ['Personal/'];
+    return {
+      ...sequence,
+      id: sequenceId,
+      pattern: EverLights.normalizePatterns(sequence.pattern),
+      effects: sequence.effects ? EverLights.normalizeEffects(sequence.effects) : [],
+      accountId: sequence.accountId ?? undefined!,
+      lastChanged: new Date().toISOString(),
+      group: groups[0], // this field appears to have no real effect
+      groups,
+    };
+  }
+
+  static normalizeGroupName(group: string): string {
+    if (group.toLowerCase() === 'personal' || group === '/') {
+      return 'Personal/';
+    }
+
+    return group.replace(/^\/*(?:Personal\/$)?(.*?)\/*$/i, 'Personal/$1/');
+  }
+
+  static normalizeGroupNames(groups: string[]): string[] {
+    return groups.map((group) => EverLights.normalizeGroupName(group));
   }
 
   public readonly api: AxiosInstance = axios.create({
@@ -23,31 +85,40 @@ export class EverLights {
     return new ZoneHelper(zoneSerial, this);
   }
 
-  async getStatus(): Promise<Status> {
+  async getStatus(): Promise<Readonly<Status>> {
     return (await this.api.get<Status>('')).data;
   }
 
-  async getHeartbeat(): Promise<null> {
+  async getHeartbeat(): Promise<Readonly<null>> {
     return (await this.api.get<null>('available')).data;
   }
 
-  async getZones(): Promise<Zone[]> {
+  async getZones(): Promise<Readonly<Zone>[]> {
     return (await this.api.get<Zone[]>('zones')).data;
   }
 
-  async getZone(zoneSerial: string): Promise<Zone[]> {
+  async getZone(zoneSerial: string): Promise<Readonly<Zone>[]> {
     return (await this.api.get<Zone[]>(`zones/${zoneSerial}`)).data;
   }
 
-  async getProgram(zoneSerial: string): Promise<Program> {
+  async getProgram(zoneSerial: string): Promise<Readonly<Program>> {
     return (await this.api.get<Program>(`zones/${zoneSerial}/sequence`)).data;
   }
 
-  async startProgram(zoneSerial: string, pattern: ColorInput[], effects: EffectInput[] | Effect[] = []): Promise<Program> {
-    const payload: Program = {
-      pattern: this.normalizePatternInput(pattern),
-      effects: this.normalizeEffectInput(effects),
+  async startProgram(zoneSerial: string, pattern: ColorInput[], effects: EffectInput[] | Effect[] = []): Promise<Readonly<Program>> {
+    const input: ProgramInput = {
+      pattern,
+      effects,
     };
+
+    console.log(input);
+    const validValue = validate(programInputSchema, input);
+
+    const payload: Program = {
+      pattern: EverLights.normalizePatterns(validValue.pattern),
+      effects: EverLights.normalizeEffects(validValue.effects),
+    };
+
     return (await this.api.post<Program>(`zones/${zoneSerial}/sequence`, payload)).data;
   }
 
@@ -59,17 +130,21 @@ export class EverLights {
     return (await this.api.get<Sequence[]>(`sequences`)).data;
   }
 
-  async getSequence(sequenceId: string): Promise<Sequence> {
+  async getSequence(sequenceId: string): Promise<Readonly<Sequence>> {
     return (await this.api.get<Sequence>(`sequences/${sequenceId}`)).data;
   }
 
-  async createSequence(sequence: Sequence | SequenceInput): Promise<Sequence> {
-    const payload: Sequence = this.normalizeSequenceInput(uuid(), sequence);
+  async createSequence(sequence: Sequence | SequenceInput): Promise<Readonly<Sequence>> {
+    const validValue = validate(sequenceInputValidation, sequence);
+
+    const payload: Sequence = EverLights.normalizeSequence(uuid(), validValue);
     return (await this.api.post<Sequence>(`sequences`, payload)).data;
   }
 
-  async updateSequence(sequenceId: string, sequence: Sequence | SequenceInput): Promise<Sequence> {
-    const payload: Sequence = this.normalizeSequenceInput(sequenceId, sequence);
+  async updateSequence(sequenceId: string, sequence: Sequence | SequenceInput): Promise<Readonly<Sequence>> {
+    const validValue = validate(sequenceInputValidation, sequence);
+
+    const payload: Sequence = EverLights.normalizeSequence(sequenceId, validValue);
     return (await this.api.put<Sequence>(`sequences/${sequenceId}`, payload)).data;
   }
 
@@ -77,19 +152,19 @@ export class EverLights {
     await this.api.delete<void>(`sequences/${sequenceId}`);
   }
 
-  async getEvents(): Promise<ScheduledEvent[]> {
+  async getEvents(): Promise<Readonly<ScheduledEvent>[]> {
     return (await this.api.get<ScheduledEvent[]>(`events`)).data;
   }
 
-  async getEvent(eventId: string): Promise<ScheduledEvent> {
+  async getEvent(eventId: string): Promise<Readonly<ScheduledEvent>> {
     return (await this.api.get<ScheduledEvent>(`events/${eventId}`)).data;
   }
 
-  async createEvent(eventId: string, event: ScheduledEvent): Promise<ScheduledEvent> {
+  async createEvent(eventId: string, event: ScheduledEvent): Promise<Readonly<ScheduledEvent>> {
     return (await this.api.post<ScheduledEvent>(`events/${eventId}`, event)).data;
   }
 
-  async updateEvent(eventId: string, event: ScheduledEvent): Promise<ScheduledEvent> {
+  async updateEvent(eventId: string, event: ScheduledEvent): Promise<Readonly<ScheduledEvent>> {
     return (await this.api.put<ScheduledEvent>(`events/${eventId}`, event)).data;
   }
 
@@ -99,43 +174,5 @@ export class EverLights {
 
   async updateTime(time: string): Promise<void> {
     return (await this.api.put<void>(`time`, { time })).data;
-  }
-
-  private normalizePatternInput(input: ColorInput[]): string[] {
-    return input.map((color) => colorHex(color));
-  }
-
-  private normalizeEffectInput(input: EffectInput[] | Effect[]): Effect[] {
-    return input.map((effect) => {
-      if (EverLights.isEffect(effect)) {
-        return effect;
-      }
-
-      return {
-        effectType: effect.type,
-        value: effect.speed,
-      };
-    });
-  }
-
-  private normalizeSequenceInput(sequenceId: string, sequence: SequenceInput | Sequence): Sequence {
-    const groups = sequence.groups ? sequence.groups.map((group) => this.normalizeGroupName(group)) : ['Personal/'];
-    return {
-      ...sequence,
-      id: sequenceId,
-      pattern: this.normalizePatternInput(sequence.pattern),
-      effects: sequence.effects ? this.normalizeEffectInput(sequence.effects) : [],
-      accountId: sequence.accountId ?? undefined!,
-      lastChanged: new Date().toISOString(),
-      group: groups[0],
-      groups,
-    };
-  }
-
-  private normalizeGroupName(group: string) {
-    if (group === 'Personal') {
-      return 'Personal/';
-    }
-    return group.replace(/^\/*(?:Personal\/$)?(.*?)\/*$/, 'Personal/$1/');
   }
 }

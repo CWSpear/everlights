@@ -51,4 +51,5 @@ const everLights = new EverLights({ host: process.env.EVER_LIGHTS_HOST! });
   }, 3000);
 })().catch((err) => {
   console.error(chalk.red('Error'), err?.response?.data || err.message);
+  console.error(err?.stack);
 });
