@@ -1,19 +1,23 @@
-import axios, { AxiosInstance } from 'axios';
-import type { Program, ScheduledEvent, Sequence, Status, Zone, Effect, ColorInput } from './types';
-import { EffectInput, Options } from './types';
+import type { AxiosInstance } from 'axios';
+import axios from 'axios';
+import { v4 as uuid } from 'uuid';
+import type { ColorInput, Effect, EffectInput, Options, Program, ScheduledEvent, Sequence, SequenceInput, Status, Zone } from './types';
 import { colorHex } from './util';
+import { ZoneHelper } from './zone-helper';
 
 export class EverLights {
-  public readonly api: AxiosInstance;
-
-  constructor(private readonly options: Options) {
-    this.api = axios.create({
-      baseURL: `http://${this.options.host}/v1`,
-      headers: {
-        Accept: 'application/json',
-      },
-    });
+  static isEffect(effectOrInputEffect: EffectInput | Effect): effectOrInputEffect is Effect {
+    return 'effectType' in effectOrInputEffect;
   }
+
+  public readonly api: AxiosInstance = axios.create({
+    baseURL: `http://${this.options.host}/v1`,
+    headers: {
+      Accept: 'application/json',
+    },
+  });
+
+  constructor(private readonly options: Options) {}
 
   makeZoneHelper(zoneSerial: string): ZoneHelper {
     return new ZoneHelper(zoneSerial, this);
@@ -59,12 +63,14 @@ export class EverLights {
     return (await this.api.get<Sequence>(`sequences/${sequenceId}`)).data;
   }
 
-  async createSequence(sequenceId: string, sequence: Sequence): Promise<Sequence> {
-    return (await this.api.post<Sequence>(`sequences/${sequenceId}`, sequence)).data;
+  async createSequence(sequence: Sequence | SequenceInput): Promise<Sequence> {
+    const payload: Sequence = this.normalizeSequenceInput(uuid(), sequence);
+    return (await this.api.post<Sequence>(`sequences`, payload)).data;
   }
 
-  async updateSequence(sequenceId: string, sequence: Sequence): Promise<Sequence> {
-    return (await this.api.put<Sequence>(`sequences/${sequenceId}`, sequence)).data;
+  async updateSequence(sequenceId: string, sequence: Sequence | SequenceInput): Promise<Sequence> {
+    const payload: Sequence = this.normalizeSequenceInput(sequenceId, sequence);
+    return (await this.api.put<Sequence>(`sequences/${sequenceId}`, payload)).data;
   }
 
   async deleteSequence(sequenceId: string): Promise<void> {
@@ -101,7 +107,7 @@ export class EverLights {
 
   private normalizeEffectInput(input: EffectInput[] | Effect[]): Effect[] {
     return input.map((effect) => {
-      if (this.isEffect(effect)) {
+      if (EverLights.isEffect(effect)) {
         return effect;
       }
 
@@ -112,23 +118,24 @@ export class EverLights {
     });
   }
 
-  private isEffect(effectOrInputEffect: EffectInput | Effect): effectOrInputEffect is Effect {
-    return 'effectType' in effectOrInputEffect;
-  }
-}
-
-export class ZoneHelper {
-  constructor(private readonly serial: string, private readonly everLights: EverLights) {}
-
-  async getProgram(): Promise<Program> {
-    return this.everLights.getProgram(this.serial);
-  }
-
-  async startProgram(pattern: ColorInput[], effects: EffectInput[] | Effect[] = []): Promise<Program> {
-    return this.everLights.startProgram(this.serial, pattern, effects);
+  private normalizeSequenceInput(sequenceId: string, sequence: SequenceInput | Sequence): Sequence {
+    const groups = sequence.groups ? sequence.groups.map((group) => this.normalizeGroupName(group)) : ['Personal/'];
+    return {
+      ...sequence,
+      id: sequenceId,
+      pattern: this.normalizePatternInput(sequence.pattern),
+      effects: sequence.effects ? this.normalizeEffectInput(sequence.effects) : [],
+      accountId: sequence.accountId ?? undefined!,
+      lastChanged: new Date().toISOString(),
+      group: groups[0],
+      groups,
+    };
   }
 
-  async stopProgram(): Promise<void> {
-    return this.everLights.stopProgram(this.serial);
+  private normalizeGroupName(group: string) {
+    if (group === 'Personal') {
+      return 'Personal/';
+    }
+    return group.replace(/^\/*(?:Personal\/$)?(.*?)\/*$/, 'Personal/$1/');
   }
 }

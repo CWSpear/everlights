@@ -2,8 +2,9 @@
 // adapted from https://github.com/stevecoug/everlights/blob/master/everlights.php
 
 import chalk from 'chalk';
-import { createSocket, Socket } from 'dgram';
-import { ColorInput } from './types';
+import type { Socket } from 'dgram';
+import { createSocket } from 'dgram';
+import type { ColorInput } from './types';
 import { hex, socketColorHex } from './util';
 
 export enum Pattern {
@@ -35,7 +36,7 @@ export class EverLights {
   private readonly options: Required<Options>;
   private readonly _readyPromise: Promise<void>;
 
-  private ready: boolean = false;
+  private ready = false;
 
   constructor(options: Options) {
     this.options = {
@@ -80,12 +81,12 @@ export class EverLights {
   }
 
   // 0 - 255
-  async brightness(brightness: number = 255): Promise<void> {
+  async brightness(brightness = 255): Promise<void> {
     await this.sendCommand(Command.Brightness, hex(brightness));
   }
 
   // idk what the scale for speed is, I think 0-255
-  async speed(speed: number = 0): Promise<void> {
+  async speed(speed = 0): Promise<void> {
     await this.sendCommand(Command.Speed, hex(speed));
   }
 

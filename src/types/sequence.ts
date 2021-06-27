@@ -1,4 +1,5 @@
 import type { ColorInput } from './color';
+import type { Effect } from './effect';
 import type { Program } from './program';
 
 export interface Sequence extends Program {
@@ -10,6 +11,10 @@ export interface Sequence extends Program {
   accountId: string;
 }
 
-export interface SequenceInput extends Omit<Sequence, 'pattern'> {
+export interface SequenceInput {
+  alias: string;
   pattern: ColorInput[];
+  effects?: Effect[];
+  groups?: string[]; // defaults to [`Personal/`]
+  accountId?: string;
 }

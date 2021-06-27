@@ -3,3 +3,6 @@ optic.yml
 node_modules
 .idea
 dist
+
+# examples aren't quite ready
+examples
