@@ -9,3 +9,5 @@ export interface EffectInput {
   speed: number; // speed 0-255
   type: EffectType;
 }
+
+export type EffectOrInput = Effect | EffectInput;

@@ -1,5 +1,5 @@
 import type { ColorInput } from './color';
-import type { Effect, EffectInput } from './effect';
+import type { Effect, EffectOrInput } from './effect';
 
 export interface Program {
   pattern: string[];
@@ -8,5 +8,7 @@ export interface Program {
 
 export interface ProgramInput {
   pattern: ColorInput[];
-  effects?: Effect[] | EffectInput[];
+  effects?: EffectOrInput[];
 }
+
+export type ProgramOrInput = Program | ProgramInput;

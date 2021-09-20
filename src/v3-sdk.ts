@@ -4,10 +4,11 @@ import { v4 as uuid } from 'uuid';
 import type {
   ColorInput,
   Effect,
-  EffectInput,
+  EffectOrInput,
   Options,
   Program,
   ProgramInput,
+  ProgramOrInput,
   ScheduledEvent,
   Sequence,
   SequenceInput,
@@ -19,7 +20,7 @@ import { programInputSchema, sequenceInputValidation } from './validation';
 import { ZoneHelper } from './zone-helper';
 
 export class EverLights {
-  static isEffect(effectOrInputEffect: EffectInput | Effect): effectOrInputEffect is Effect {
+  static isEffect(effectOrInputEffect: EffectOrInput): effectOrInputEffect is Effect {
     return 'effectType' in effectOrInputEffect;
   }
 
@@ -31,7 +32,7 @@ export class EverLights {
     return colors.map((color) => EverLights.normalizePattern(color));
   }
 
-  static normalizeEffect(effect: EffectInput | Effect): Effect {
+  static normalizeEffect(effect: EffectOrInput): Effect {
     if (EverLights.isEffect(effect)) {
       return effect;
     }
@@ -42,7 +43,7 @@ export class EverLights {
     };
   }
 
-  static normalizeEffects(effects: EffectInput[] | Effect[]): Effect[] {
+  static normalizeEffects(effects: EffectOrInput[]): Effect[] {
     return effects.map((effect) => EverLights.normalizeEffect(effect));
   }
 
@@ -61,11 +62,11 @@ export class EverLights {
   }
 
   static normalizeGroupName(group: string): string {
-    if (group.toLowerCase() === 'personal' || group === '/') {
+    if (group.toLowerCase() === 'personal' || group === '/' || !group) {
       return 'Personal/';
     }
 
-    return group.replace(/^\/*(?:Personal\/$)?(.*?)\/*$/i, 'Personal/$1/');
+    return group.replace(/^\/*(?:Personal\/$)?(.*?)\/*$/i, 'Personal/$1/').replace(/\/+$/, '/');
   }
 
   static normalizeGroupNames(groups: string[]): string[] {
@@ -105,13 +106,28 @@ export class EverLights {
     return (await this.api.get<Program>(`zones/${zoneSerial}/sequence`)).data;
   }
 
-  async startProgram(zoneSerial: string, pattern: ColorInput[], effects: EffectInput[] | Effect[] = []): Promise<Readonly<Program>> {
-    const input: ProgramInput = {
-      pattern,
-      effects,
-    };
+  async startProgram(zoneSerial: string, pattern: ProgramOrInput): Promise<Readonly<Program>>;
+  async startProgram(zoneSerial: string, pattern: ColorInput[], effects?: EffectOrInput[]): Promise<Readonly<Program>>;
+  async startProgram(
+    zoneSerial: string,
+    patternOrProgram: ProgramOrInput | ColorInput[],
+    effects?: EffectOrInput[],
+  ): Promise<Readonly<Program>>;
+  async startProgram(
+    zoneSerial: string,
+    patternOrProgram: ProgramOrInput | ColorInput[],
+    effects: EffectOrInput[] = [],
+  ): Promise<Readonly<Program>> {
+    const input: ProgramInput = Array.isArray(patternOrProgram)
+      ? {
+          pattern: patternOrProgram,
+          effects,
+        }
+      : {
+          pattern: patternOrProgram.pattern,
+          effects: patternOrProgram.effects,
+        };
 
-    console.log(input);
     const validValue = validate(programInputSchema, input);
 
     const payload: Program = {

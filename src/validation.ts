@@ -16,7 +16,7 @@ import { hexColorRegex } from './util';
 
 export const colorSchema = Joi.string().pattern(hexColorRegex);
 
-export const patternSchema = Joi.array().items(colorSchema).required().min(1);
+export const patternsSchema = Joi.array().items(colorSchema).required().min(1);
 
 const sharedEffectValidationDefinition: Record<keyof EffectInput, Schema> = {
   speed: Joi.number().min(0).max(255).default(255),
@@ -36,17 +36,17 @@ export const effectInputSchema = Joi.object<EffectInput>({
 
 export const effectsSchema = Joi.array().optional().items(effectSchema).default([]);
 
-export const effectInputsSchema = Joi.array().items(effectInputSchema).default([]);
+export const effectInputsSchema = Joi.array().optional().items(effectInputSchema).default([]);
 
-export const effectsOrEffectInputsSchema = Joi.array().items(Joi.alternatives().try(effectInputsSchema, effectSchema));
+export const effectsOrEffectInputsSchema = Joi.array().items(Joi.alternatives().try(effectInputSchema, effectSchema));
 
 export const patternInputSchema = Joi.alternatives()
   .required()
   .try(
-    patternSchema,
+    colorSchema,
     Joi.string(),
     Joi.number(),
-    Joi.array().min(3).max(4).items(Joi.number()),
+    Joi.array().min(3).max(4).items(Joi.number()), // TODO float 0-1 or integer 0-255?
     Joi.object<RGBColor>({
       r: Joi.number().required(),
       g: Joi.number().required(),
@@ -69,20 +69,22 @@ export const patternInputSchema = Joi.alternatives()
     }),
   );
 
+export const patternInputsSchema = Joi.array().items(patternInputSchema);
+
 export const programSchema = Joi.object<Program>({
-  pattern: patternSchema,
+  pattern: patternsSchema,
   effects: effectsSchema,
 });
 
 export const programInputSchema = Joi.object<ProgramInput>({
-  pattern: patternInputSchema,
+  pattern: patternInputsSchema,
   effects: effectsOrEffectInputsSchema,
 });
 
 const sharedSequenceValidationDefinition: Record<keyof Sequence, Schema> = {
   id: Joi.string().uuid(),
   alias: Joi.string().required(),
-  pattern: patternSchema,
+  pattern: patternsSchema,
   effects: effectsSchema,
   accountId: Joi.string().uuid(),
   lastChanged: Joi.string().isoDate(),
@@ -103,6 +105,6 @@ export const sequenceValidation = Joi.object<Sequence>({
 
 export const sequenceInputValidation = Joi.object<Sequence>({
   ...sharedSequenceValidationDefinition,
-  pattern: patternInputSchema,
+  pattern: patternInputsSchema,
   effects: effectsOrEffectInputsSchema,
 });

@@ -1,6 +1,6 @@
 import type { ColorInput } from './types/color';
-import type { Effect, EffectInput } from './types/effect';
-import type { Program } from './types/program';
+import type { EffectOrInput } from './types/effect';
+import type { Program, ProgramOrInput } from './types/program';
 import type { EverLights } from './v3-sdk';
 
 export class ZoneHelper {
@@ -10,8 +10,17 @@ export class ZoneHelper {
     return this.everLights.getProgram(this.serial);
   }
 
-  async startProgram(pattern: ColorInput[], effects: EffectInput[] | Effect[] = []): Promise<Program> {
-    return this.everLights.startProgram(this.serial, pattern, effects);
+  async startProgram(pattern: ProgramOrInput): Promise<Readonly<Program>>;
+  async startProgram(pattern: ColorInput[], effects?: EffectOrInput[]): Promise<Readonly<Program>>;
+  async startProgram(
+    patternOrProgram: ProgramOrInput | ColorInput[],
+    effects?: EffectOrInput[],
+  ): Promise<Readonly<Program>>;
+  async startProgram(
+    patternOrProgram: ProgramOrInput | ColorInput[],
+    effects: EffectOrInput[] = [],
+  ): Promise<Readonly<Program>> {
+    return this.everLights.startProgram(this.serial, patternOrProgram, effects);
   }
 
   async stopProgram(): Promise<void> {

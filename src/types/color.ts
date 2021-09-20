@@ -22,4 +22,11 @@ export interface HueSaturationLightnessColor {
   lightness: number;
 }
 
-export type ColorInput = string | number | number[] | RGBColor | RedGreenBlueColor | HSLColor | HueSaturationLightnessColor;
+export type ColorInput =
+  | string
+  | number
+  | number[]
+  | RGBColor
+  | RedGreenBlueColor
+  | HSLColor
+  | HueSaturationLightnessColor;
