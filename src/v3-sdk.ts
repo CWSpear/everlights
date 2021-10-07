@@ -189,6 +189,6 @@ export class EverLights {
   }
 
   async updateTime(time: string): Promise<void> {
-    return (await this.api.put<void>(`time`, { time })).data;
+    await this.api.put<{ time: string }>(`time`, { time });
   }
 }
