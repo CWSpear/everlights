@@ -111,7 +111,7 @@ export function validate<T extends Validatedable>(schema: ObjectSchema<T>, input
     throw new Error(error.message);
   }
 
-  return value;
+  return <ValidationResult<T>['value']>value;
 }
 
 export function prettyDeepPrint(...items: unknown[]): void {

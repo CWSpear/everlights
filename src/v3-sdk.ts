@@ -24,12 +24,12 @@ export class EverLights {
     return 'effectType' in effectOrInputEffect;
   }
 
-  static normalizePattern(color: ColorInput): string {
+  static normalizeColor(color: ColorInput): string {
     return colorHex(color);
   }
 
-  static normalizePatterns(colors: ColorInput[]): string[] {
-    return colors.map((color) => EverLights.normalizePattern(color));
+  static normalizePattern(colors: ColorInput[]): string[] {
+    return colors.map((color) => EverLights.normalizeColor(color));
   }
 
   static normalizeEffect(effect: EffectOrInput): Effect {
@@ -52,7 +52,7 @@ export class EverLights {
     return {
       ...sequence,
       id: sequenceId,
-      pattern: EverLights.normalizePatterns(sequence.pattern),
+      pattern: EverLights.normalizePattern(sequence.pattern),
       effects: sequence.effects ? EverLights.normalizeEffects(sequence.effects) : [],
       accountId: sequence.accountId ?? undefined!,
       lastChanged: new Date().toISOString(),
@@ -98,8 +98,8 @@ export class EverLights {
     return (await this.api.get<Zone[]>('zones')).data;
   }
 
-  async getZone(zoneSerial: string): Promise<Readonly<Zone>[]> {
-    return (await this.api.get<Zone[]>(`zones/${zoneSerial}`)).data;
+  async getZone(zoneSerial: string): Promise<Readonly<Zone>> {
+    return (await this.api.get<Zone>(`zones/${zoneSerial}`)).data;
   }
 
   async getProgram(zoneSerial: string): Promise<Readonly<Program>> {
@@ -131,7 +131,7 @@ export class EverLights {
     const validValue = validate(programInputSchema, input);
 
     const payload: Program = {
-      pattern: EverLights.normalizePatterns(validValue.pattern),
+      pattern: EverLights.normalizePattern(validValue.pattern),
       effects: EverLights.normalizeEffects(validValue.effects),
     };
 
@@ -190,5 +190,10 @@ export class EverLights {
 
   async updateTime(time: string): Promise<void> {
     await this.api.put<{ time: string }>(`time`, { time });
+  }
+
+  async reboot(): Promise<void> {
+    const str = (await this.api.get<void>('reboot')).data;
+    console.log(str);
   }
 }
